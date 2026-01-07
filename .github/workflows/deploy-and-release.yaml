@@ -1,4 +1,4 @@
-name: Deploy and Release
+name: Create Release
 
 on:
   push:
@@ -7,29 +7,17 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
-  group: "deploy-release-${{ github.ref }}"
+  group: "release-${{ github.ref }}"
   cancel-in-progress: false
 
 jobs:
-  deploy-pages:
-    name: Deploy to GitHub Pages
-    uses: ./.github/workflows/deploy-pages.yaml
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-
   create-release:
     name: Create GitHub Release
-    needs: deploy-pages
     uses: ./.github/workflows/release.yaml
     with:
       tag_name: ${{ github.ref_name }}
       prerelease: false
-      pages_url: ${{ needs.deploy-pages.outputs.pages_url }}
     permissions:
       contents: write
