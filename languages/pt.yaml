@@ -73,6 +73,6 @@ cv:
       - label: Inglês
         details: Avançado
 design:
-  theme: moderncv
+  theme: engineeringclassic
 locale:
   language: portuguese
