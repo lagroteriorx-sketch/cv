@@ -41,19 +41,58 @@ jobs:
           for yaml in *.yaml; do
             if [ -f "$yaml" ]; then
               echo "Building $yaml..."
-              rendercv render "$yaml"
 
               # Extract language code from filename (e.g., en.yaml -> en)
               LANG_CODE=$(basename "$yaml" .yaml)
 
-              # Find the generated PDF to map it to the language
-              # The PDF will be the newest file in rendercv_output after this build
-              PDF_FILE=$(ls -t rendercv_output/*.pdf | head -1)
+              # Clean output directory before building
+              rm -rf rendercv_output
+
+              # Render the CV
+              rendercv render "$yaml"
+
+              # Find the generated PDF and copy it immediately with language code
+              PDF_FILE=$(ls rendercv_output/*.pdf | head -1)
+              HTML_FILE=$(ls rendercv_output/*.html | head -1)
+
               if [ -f "$PDF_FILE" ]; then
                 PDF_NAME=$(basename "$PDF_FILE")
+                HTML_NAME=$(basename "$HTML_FILE")
+
+                # Copy to parent with language-specific name to avoid overwriting
+                cp "$PDF_FILE" "../${LANG_CODE}_temp.pdf"
+                cp "$HTML_FILE" "../${LANG_CODE}_temp.html"
+
+                # Map original filename to language code
                 echo "$PDF_NAME:$LANG_CODE" >> ../lang_mapping.txt
-                echo "Mapped $PDF_NAME to language: $LANG_CODE"
+                echo "Built and mapped: $PDF_NAME -> $LANG_CODE"
               fi
+            fi
+          done
+
+          # Move temp files back to rendercv_output for copying step
+          cd ..
+          mkdir -p languages/rendercv_output
+          mv *_temp.pdf languages/rendercv_output/ 2>/dev/null || true
+          mv *_temp.html languages/rendercv_output/ 2>/dev/null || true
+
+          # Rename back to original names
+          cd languages/rendercv_output
+          for file in *_temp.pdf; do
+            if [ -f "$file" ]; then
+              LANG_CODE="${file%_temp.pdf}"
+              # Get original name from mapping
+              ORIGINAL=$(grep ":${LANG_CODE}$" ../../lang_mapping.txt | cut -d: -f1)
+              mv "$file" "$ORIGINAL"
+            fi
+          done
+
+          for file in *_temp.html; do
+            if [ -f "$file" ]; then
+              LANG_CODE="${file%_temp.html}"
+              ORIGINAL=$(grep ":${LANG_CODE}$" ../../lang_mapping.txt | cut -d: -f1)
+              ORIGINAL_HTML="${ORIGINAL%.pdf}.html"
+              mv "$file" "$ORIGINAL_HTML"
             fi
           done
 
