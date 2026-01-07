@@ -53,11 +53,22 @@ jobs:
         run: |
           mkdir -p public
 
-          # Copy all PDFs and HTML files to public directory
-          cp artifacts/*.pdf public/ 2>/dev/null || true
-          cp artifacts/*.html public/ 2>/dev/null || true
+          # Rename files to use language codes (en.pdf, pt.pdf, etc)
+          if [ -f artifacts/lang_mapping.txt ]; then
+            while IFS=: read -r PDF_FILE LANG_CODE; do
+              HTML_FILE="${PDF_FILE%.pdf}.html"
 
-          echo "Files copied to public directory:"
+              # Copy and rename to language code
+              cp "artifacts/${PDF_FILE}" "public/${LANG_CODE}.pdf"
+              cp "artifacts/${HTML_FILE}" "public/${LANG_CODE}.html"
+
+              echo "Renamed: $PDF_FILE -> ${LANG_CODE}.pdf"
+              echo "Renamed: $HTML_FILE -> ${LANG_CODE}.html"
+            done < artifacts/lang_mapping.txt
+          fi
+
+          echo ""
+          echo "Files in public directory:"
           ls -lh public/
 
       - name: Generate README.md
@@ -86,15 +97,14 @@ jobs:
           |----------|----------------|------|
           EOF
 
-          # Generate rows for each PDF found
+          # Generate rows for each language
           if [ -f artifacts/lang_mapping.txt ]; then
             while IFS=: read -r PDF_FILE LANG_CODE; do
-              HTML_FILE="${PDF_FILE%.pdf}.html"
-
               # Get display name from mapping, fallback to code
               LANG_DISPLAY="${LANG_NAMES[$LANG_CODE]:-$LANG_CODE}"
 
-              echo "| $LANG_DISPLAY | [Preview](${PAGES_URL}/${HTML_FILE}) | [Download](${PAGES_URL}/${PDF_FILE}) |" >> repo/README.md
+              # Use language code for URLs (en.pdf, pt.html, etc)
+              echo "| $LANG_DISPLAY | [Preview](${PAGES_URL}/${LANG_CODE}.html) | [Download](${PAGES_URL}/${LANG_CODE}.pdf) |" >> repo/README.md
             done < artifacts/lang_mapping.txt
           fi
 
@@ -185,16 +195,15 @@ jobs:
           # Generate table rows using language mapping
           if [ -f artifacts/lang_mapping.txt ]; then
             while IFS=: read -r PDF_FILE LANG_CODE; do
-              HTML_FILE="${PDF_FILE%.pdf}.html"
-
               # Get display name from mapping, fallback to code
               LANG_DISPLAY="${LANG_NAMES[$LANG_CODE]:-$LANG_CODE}"
 
+              # Use language code for filenames (en.pdf, pt.html, etc)
               cat >> public/index.html << EOF
                       <tr>
                           <td>$LANG_DISPLAY</td>
-                          <td><a href="$HTML_FILE">Preview</a></td>
-                          <td><a href="$PDF_FILE">Download</a></td>
+                          <td><a href="${LANG_CODE}.html">Preview</a></td>
+                          <td><a href="${LANG_CODE}.pdf">Download</a></td>
                       </tr>
           EOF
             done < artifacts/lang_mapping.txt
@@ -266,11 +275,10 @@ jobs:
           # Generate summary rows using language mapping
           if [ -f artifacts/lang_mapping.txt ]; then
             while IFS=: read -r PDF_FILE LANG_CODE; do
-              HTML_FILE="${PDF_FILE%.pdf}.html"
-
               # Get display name from mapping, fallback to code
               LANG_DISPLAY="${LANG_NAMES[$LANG_CODE]:-$LANG_CODE}"
 
-              echo "| $LANG_DISPLAY | [Preview](${PAGES_URL}${HTML_FILE}) | [Download](${PAGES_URL}${PDF_FILE}) |" >> $GITHUB_STEP_SUMMARY
+              # Use language code for URLs (en.pdf, pt.html, etc)
+              echo "| $LANG_DISPLAY | [Preview](${PAGES_URL}${LANG_CODE}.html) | [Download](${PAGES_URL}${LANG_CODE}.pdf) |" >> $GITHUB_STEP_SUMMARY
             done < artifacts/lang_mapping.txt
           fi
