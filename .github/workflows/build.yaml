@@ -96,24 +96,36 @@ jobs:
       - name: Detect generated files
         id: detect-files
         run: |
-          # Find English files (assuming they don't contain Portuguese patterns)
-          EN_PDF=$(cd artifacts && ls *.pdf | grep -v -i "silva\|joao\|joão" | head -1)
-          EN_HTML=$(cd artifacts && ls *.html | grep -v -i "silva\|joao\|joão" | head -1)
+          echo "Detected files from language mapping:"
 
-          # Find Portuguese files
-          PT_PDF=$(cd artifacts && ls *.pdf | grep -i "silva\|joao\|joão" | head -1)
-          PT_HTML=$(cd artifacts && ls *.html | grep -i "silva\|joao\|joão" | head -1)
+          # Read first two entries from lang_mapping for backwards compatibility
+          # (Some workflows might still expect en/pt outputs)
+          FIRST_PDF=""
+          FIRST_HTML=""
+          SECOND_PDF=""
+          SECOND_HTML=""
 
-          echo "Detected files:"
-          echo "  English PDF: $EN_PDF"
-          echo "  English HTML: $EN_HTML"
-          echo "  Portuguese PDF: $PT_PDF"
-          echo "  Portuguese HTML: $PT_HTML"
+          LINE_NUM=0
+          while IFS=: read -r PDF_FILE LANG_CODE; do
+            LINE_NUM=$((LINE_NUM + 1))
+            HTML_FILE="${PDF_FILE%.pdf}.html"
 
-          echo "en-pdf-name=$EN_PDF" >> $GITHUB_OUTPUT
-          echo "en-html-name=$EN_HTML" >> $GITHUB_OUTPUT
-          echo "pt-pdf-name=$PT_PDF" >> $GITHUB_OUTPUT
-          echo "pt-html-name=$PT_HTML" >> $GITHUB_OUTPUT
+            if [ $LINE_NUM -eq 1 ]; then
+              FIRST_PDF="$PDF_FILE"
+              FIRST_HTML="$HTML_FILE"
+              echo "  First CV: $PDF_FILE ($LANG_CODE)"
+            elif [ $LINE_NUM -eq 2 ]; then
+              SECOND_PDF="$PDF_FILE"
+              SECOND_HTML="$HTML_FILE"
+              echo "  Second CV: $PDF_FILE ($LANG_CODE)"
+            fi
+          done < artifacts/lang_mapping.txt
+
+          # Output for backwards compatibility (will be first and second CVs found)
+          echo "en-pdf-name=$FIRST_PDF" >> $GITHUB_OUTPUT
+          echo "en-html-name=$FIRST_HTML" >> $GITHUB_OUTPUT
+          echo "pt-pdf-name=$SECOND_PDF" >> $GITHUB_OUTPUT
+          echo "pt-html-name=$SECOND_HTML" >> $GITHUB_OUTPUT
 
       - name: Generate metadata
         run: |
@@ -132,34 +144,39 @@ jobs:
           EOF
 
       - name: Verify artifacts exist
-        env:
-          EN_PDF: ${{ steps.detect-files.outputs.en-pdf-name }}
-          PT_PDF: ${{ steps.detect-files.outputs.pt-pdf-name }}
-          EN_HTML: ${{ steps.detect-files.outputs.en-html-name }}
-          PT_HTML: ${{ steps.detect-files.outputs.pt-html-name }}
         run: |
           echo "Checking for required artifacts..."
 
+          # Count YAML files to know how many CVs we expect
+          YAML_COUNT=$(ls languages/*.yaml 2>/dev/null | wc -l)
           PDF_COUNT=$(ls artifacts/*.pdf 2>/dev/null | wc -l)
           HTML_COUNT=$(ls artifacts/*.html 2>/dev/null | wc -l)
 
-          if [ "$PDF_COUNT" -lt 2 ]; then
-            echo "❌ Error: Expected 2 PDF files, found $PDF_COUNT"
+          echo "Expected $YAML_COUNT CVs (based on YAML files in languages/)"
+          echo "Found $PDF_COUNT PDF(s) and $HTML_COUNT HTML file(s)"
+
+          if [ "$PDF_COUNT" -ne "$YAML_COUNT" ]; then
+            echo "❌ Error: Expected $YAML_COUNT PDF files, found $PDF_COUNT"
             exit 1
           fi
 
-          if [ "$HTML_COUNT" -lt 2 ]; then
-            echo "❌ Error: Expected 2 HTML files, found $HTML_COUNT"
+          if [ "$HTML_COUNT" -ne "$YAML_COUNT" ]; then
+            echo "❌ Error: Expected $YAML_COUNT HTML files, found $HTML_COUNT"
             exit 1
           fi
 
           echo "✅ All required artifacts present"
           echo ""
-          echo "Generated files:"
-          echo "  English PDF: $EN_PDF"
-          echo "  English HTML: $EN_HTML"
-          echo "  Portuguese PDF: $PT_PDF"
-          echo "  Portuguese HTML: $PT_HTML"
+          echo "Generated files from languages/ folder:"
+
+          # Display mapping
+          if [ -f artifacts/lang_mapping.txt ]; then
+            while IFS=: read -r PDF_FILE LANG_CODE; do
+              HTML_FILE="${PDF_FILE%.pdf}.html"
+              echo "  [$LANG_CODE] $PDF_FILE + $HTML_FILE"
+            done < artifacts/lang_mapping.txt
+          fi
+
           echo ""
           ls -lh artifacts/
 
@@ -173,11 +190,6 @@ jobs:
           compression-level: 9
 
       - name: Build summary
-        env:
-          EN_PDF: ${{ steps.detect-files.outputs.en-pdf-name }}
-          PT_PDF: ${{ steps.detect-files.outputs.pt-pdf-name }}
-          EN_HTML: ${{ steps.detect-files.outputs.en-html-name }}
-          PT_HTML: ${{ steps.detect-files.outputs.pt-html-name }}
         run: |
           echo "## 🔨 Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -185,12 +197,20 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📄 Files Generated" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| File | Size | Type |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|------|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| \`${EN_PDF}\` | $(du -h "artifacts/${EN_PDF}" | cut -f1) | PDF |" >> $GITHUB_STEP_SUMMARY
-          echo "| \`${PT_PDF}\` | $(du -h "artifacts/${PT_PDF}" | cut -f1) | PDF |" >> $GITHUB_STEP_SUMMARY
-          echo "| \`${EN_HTML}\` | $(du -h "artifacts/${EN_HTML}" | cut -f1) | HTML |" >> $GITHUB_STEP_SUMMARY
-          echo "| \`${PT_HTML}\` | $(du -h "artifacts/${PT_HTML}" | cut -f1) | HTML |" >> $GITHUB_STEP_SUMMARY
+          echo "| Language | PDF | HTML |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-----|------|" >> $GITHUB_STEP_SUMMARY
+
+          # Generate rows from language mapping
+          if [ -f artifacts/lang_mapping.txt ]; then
+            while IFS=: read -r PDF_FILE LANG_CODE; do
+              HTML_FILE="${PDF_FILE%.pdf}.html"
+              PDF_SIZE=$(du -h "artifacts/${PDF_FILE}" | cut -f1)
+              HTML_SIZE=$(du -h "artifacts/${HTML_FILE}" | cut -f1)
+
+              echo "| \`$LANG_CODE\` | \`${PDF_FILE}\` ($PDF_SIZE) | \`${HTML_FILE}\` ($HTML_SIZE) |" >> $GITHUB_STEP_SUMMARY
+            done < artifacts/lang_mapping.txt
+          fi
+
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📦 Artifact" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
