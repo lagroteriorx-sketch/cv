@@ -1,77 +1,65 @@
 cv:
-  name: Guilherme Nimer Gojlevicius
-  location: São Paulo, Brasil
-  email: gojnimer@gmail.com
-  phone: +55 11 948659453
+  name: Gabriel Lagroterio  
+  location: Rio de Janeiro, Brasil
+  email: lagroteriorx@gmail.com
+  phone: +55 21 984462014
   social_networks:
     - network: LinkedIn
-      username: gojnimer
-  headline: Engenheiro de Software Sênior
-  summary: Engenheiro de software full-stack com mais de 7 anos de experiência em desenvolvimento web escalável. Especializado em arquitetura de Micro Frontends e ecossistema React moderno (Next.js, Remix, Astro), com forte experiência em TypeScript, Node.js e Angular. Possuo conhecimento sólido em DevOps e infraestrutura (Kubernetes, Docker, CI/CD), mantendo homelab pessoal há 3 anos. Histórico de liderar iniciativas de padronização, otimização de performance e modernização de sistemas legados.
+      username: 
+
+  summary: Profissional formado em Redes de Computação, com MBA em Comunicação e Marketing Digital,
+possuindo experiência nas áreas de Tecnologia da Informação e Marketing. Atuação focada na
+integração entre tecnologia, estratégia digital e comunicação, com perfil analítico, visão sistêmica e
+orientação a resultados. Detém amplo conhecimento em astronomia e astrofísica, aplicando
+pensamento científico, lógica e análise crítica na solução de problemas complexos.
   sections:
     Experiência:
-      - company: Hospital Israelita Albert Einstein
-        position: Engenheiro de Software Sênior
-        start_date: 2021-08
-        end_date: present
+      - company: Autonomo
+        position: Marketing Digital
+        start_date: 
+        end_date: 
         highlights:
-          - Implantei framework de formulários médicos dinâmicos, consolidando diversos projetos legados em uma única plataforma configurável
-          - Padronizei e modernizei a arquitetura de Micro Frontends (MFE), melhorando escalabilidade e manutenibilidade dos sistemas internos
-          - Desenvolvi e mantive design system em React, garantindo consistência visual e reutilização de componentes em toda a plataforma
-          - Integrei serviços de prontuário eletrônico e sistemas médicos, garantindo troca de dados em tempo real
-
-      - company: Bradesco
-        position: Engenheiro de Software Sênior
-        start_date: 2020-06
-        end_date: 2021-08
-        highlights:
-          - Responsável pela área de Notificações do app mobile principal, desenvolvendo funcionalidades críticas de comunicação com milhões de usuários
-          - Utilizei Angular e React Native em arquitetura MFE, garantindo precisão e agilidade nas notificações transacionais e alertas de fraude
-          - Desenvolvi sistema de autorização e configuração de notificações, melhorando usabilidade e controle do usuário
-
-      - company: Foursys
-        position: Desenvolvedor Frontend
-        location: São Paulo, Brasil
-        start_date: 2020-02
-        end_date: 2020-06
-        highlights:
-          - Desenvolvimento de aplicações web com React e TypeScript para clientes corporativos
-          - Participação em projetos de modernização de interfaces legadas
-
-      - company: Fullware Tecnologia De Sistemas
-        position: Desenvolvedor Mobile
-        start_date: 2018-06
-        end_date: 2020-02
-        highlights:
-          - Desenvolvimento de aplicações mobile e web utilizando C#, .NET Core e Xamarin Forms
-          - Implementação de sistemas CRM que otimizaram processos de vendas e atendimento ao cliente
+         - Planejamento e execução de estratégias de marketing digital
+         - Comunicação digital e posicionamento de marca
+         - Criação, acompanhamento e otimização de campanhas
+         - Análise de métricas e indicadores de desempenho
+          
 
     Educação:
-      - institution: FIAP
-        area: Sistema da Informação
-        degree: Bacharelado
-        start_date: 2020
-        end_date: 2025
+      - institution: ESTACIO
+        area: Redes de Computação
+        degree: Tecnologo
+        start_date: 
+        end_date: 
+
+        
+      - institution: ESTACIO
+        area: Comunicação e Marketing Digital
+        degree: Pós MBA
+        start_date: 
+        end_date: 
 
     Habilidades:
       - label: Principais Competências
-        details: JavaScript, TypeScript, React.js, Node.js, Desenvolvimento Full-Stack
-      - label: Frameworks Frontend
-        details: React, Next.js, Remix, Astro, Angular
-      - label: Arquitetura e Infraestrutura
-        details: Kubernetes, Docker, CI/CD
-      - label: Backend
-        details: Node.js, C#, .NET Core, BaaS, Arquitetura Orientada a Eventos
-      - label: AI e Metodologias
-        details: Agentic Development, Prompt Engineering, TDD, Spec-Oriented Development
-      - label: Mobile
-        details: React Native, Xamarin Forms
+        details: Redes de Computadores e Tecnologia da Informação
+      - label: 
+        details: Marketing Digital e Comunicação Estratégica
+      - label: 
+        details: Análise de dados e métricas 
+      - label: 
+        details: Planejamento estratégico
+      - label: 
+        details: Integração entre tecnologia e marketing
+      - label: 
+        details: Resolução de problemas complexos
+      - label: 
+        details: Inglês Intermediário-Avançado (B2)
 
     Idiomas:
       - label: Português
         details: Nativo
       - label: Inglês
-        details: Avançado
+        details: Intermediário-Avançado
 design:
   theme: engineeringclassic
 locale:
